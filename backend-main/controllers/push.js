@@ -1,6 +1,6 @@
 const fs = require("fs").promises;
 const path = require("path");
-const { s3, S3_BUCKET } = require("../config/aws-config");
+const { cloudinary } = require("../config/cloudConfig");
 
 async function pushRepo() {
   const repoPath = path.resolve(process.cwd(), ".apnaGit");
@@ -14,20 +14,30 @@ async function pushRepo() {
 
       for (const file of files) {
         const filePath = path.join(commitPath, file);
-        const fileContent = await fs.readFile(filePath);
-        const params = {
-          Bucket: S3_BUCKET,
-          Key: `commits/${commitDir}/${file}`,
-          Body: fileContent,
-        };
 
-        await s3.upload(params).promise();
+        // Determine the file extension to check if it's an image
+        const fileExtension = path.extname(file).toLowerCase();
+        let resourceType = "image"; // Default resource type is image
+
+        // If the file is not an image, set resource type to raw
+        if (!['.jpg', '.jpeg', '.png', '.gif'].includes(fileExtension)) {
+          resourceType = "raw"; // Use raw for non-image files
+        }
+
+        // Upload file to Cloudinary with appropriate resource type
+        await cloudinary.uploader.upload(filePath, {
+          folder: `commits/${commitDir}`, // Specify folder
+          use_filename: true,             // Use the original filename
+          resource_type: resourceType,    // Set the resource type based on file extension
+        });
+
+        console.log(`File ${file} from commit ${commitDir} pushed to Cloudinary.`);
       }
     }
 
-    console.log("All commits pushed to S3.");
+    console.log("All commits pushed to Cloudinary.");
   } catch (err) {
-    console.error("Error pushing to S3 : ", err);
+    console.error("Error pushing to Cloudinary: ", err);
   }
 }
 

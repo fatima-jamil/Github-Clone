@@ -15,6 +15,7 @@ async function createRepository(req, res) {
       return res.status(400).json({ error: "Invalid User ID!" });
     }
 
+
     const newRepository = new Repository({
       name,
       description,
@@ -24,6 +25,8 @@ async function createRepository(req, res) {
       issues,
     });
 
+    
+    newRepository.owner;
     const result = await newRepository.save();
 
     res.status(201).json({

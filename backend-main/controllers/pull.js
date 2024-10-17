@@ -1,42 +1,46 @@
 const fs = require("fs").promises;
 const path = require("path");
-const { s3, S3_BUCKET } = require("../config/aws-config");
+const { cloudinary } = require("../config/cloudConfig");
 
 async function pullRepo() {
   const repoPath = path.resolve(process.cwd(), ".apnaGit");
   const commitsPath = path.join(repoPath, "commits");
 
   try {
-    const data = await s3
-      .listObjectsV2({
-        Bucket: S3_BUCKET,
-        Prefix: "commits/",
-      })
-      .promise();
+    // List all assets in the 'commits' folder from Cloudinary
+    const result = await cloudinary.api.resources({
+      type: "upload",
+      prefix: "commits/", // List only resources in 'commits/' folder
+      max_results: 500,   // Adjust the limit as needed
+    });
 
-    const objects = data.Contents;
+    const resources = result.resources;
 
-    for (const object of objects) {
-      const key = object.Key;
+    for (const resource of resources) {
+      const publicId = resource.public_id; // Equivalent to 'Key' in S3
       const commitDir = path.join(
         commitsPath,
-        path.dirname(key).split("/").pop()
+        path.dirname(publicId).split("/").pop()
       );
 
+      // Create the local directory for this commit
       await fs.mkdir(commitDir, { recursive: true });
 
-      const params = {
-        Bucket: S3_BUCKET,
-        Key: key,
-      };
+      // Download the file using the secure URL
+      const fileUrl = resource.secure_url;
+      const fileResponse = await fetch(fileUrl); // Fetch file from Cloudinary URL
+      const fileContent = await fileResponse.buffer();
 
-      const fileContent = await s3.getObject(params).promise();
-      await fs.writeFile(path.join(repoPath, key), fileContent.Body);
+      // Save the file locally in the corresponding commit folder
+      const localFilePath = path.join(repoPath, `${publicId}${path.extname(resource.url)}`);
+      await fs.writeFile(localFilePath, fileContent);
 
-      console.log("All commits pulled from S3.");
+      console.log(`File ${publicId} pulled from Cloudinary.`);
     }
+
+    console.log("All commits pulled from Cloudinary.");
   } catch (err) {
-    console.error("Unable to pull : ", err);
+    console.error("Unable to pull: ", err);
   }
 }
 

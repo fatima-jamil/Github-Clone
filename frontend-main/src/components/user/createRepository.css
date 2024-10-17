@@ -1,0 +1,39 @@
+.create-repo-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .repo-header-container {
+    border-bottom: 1px solid #d8dee4;
+    margin-bottom: 20px;
+  }
+  
+  .repo-form-container {
+    padding: 10px 0;
+  }
+  
+  .repo-input {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  
+  .repo-options {
+    margin-top: 20px;
+  }
+  
+  .repo-checkbox-label {
+    margin-left: 10px;
+    font-weight: bold;
+  }
+  
+  .repo-checkbox-description {
+    margin-left: 25px;
+    color: #6a737d;
+  }
+  
+  .repo-create-button {
+    margin-top: 20px;
+    width: 100%;
+  }
+  

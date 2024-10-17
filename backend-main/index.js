@@ -48,8 +48,8 @@ yargs(hideBin(process.argv))
       commitRepo(argv.message);
     }
   )
-  .command("push", "Push commits to S3", {}, pushRepo)
-  .command("pull", "Pull commits from S3", {}, pullRepo)
+  .command("push", "Push commits to cloudinary", {}, pushRepo)
+  .command("pull", "Pull commits from cloudinary", {}, pullRepo)
   .command(
     "revert <commitID>",
     "Revert to a specific commit",
